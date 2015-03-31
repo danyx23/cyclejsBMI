@@ -2,7 +2,7 @@ cylcebmi
 =======
 
 simple body mass index calculator built with cylcejs. This is a simple
-example that mirrors @lefant's purescript and react + omniscient versions
+example that mirrors @lefant's [purescript](https://github.com/lefant/purebmi/) and [react + omniscient](https://github.com/lefant/omnibmi/) versions
 of the same bmi calculator, but with cyclejs instead of react.
 
 demo url:
