@@ -1,0 +1,17 @@
+{
+  "name": "cyclebmi",
+  "description": "A reimplementation of the omniBSI sample app in cycle js",
+  "version": "0.0.1",
+  "main": "js/omnibmi.js",
+  "author": "@danyx23",
+  "license": "mit",
+  "dependencies": {
+    "cyclejs": "^0.17"
+  },
+  "devDependencies": {
+    "babel": "^4.7",
+    "babel-core": "^4.7.16",
+    "babel-loader": "^4.2.0",
+    "webpack": "^1.7.3"
+  }
+}
