@@ -17,13 +17,19 @@ Cycle.registerCustomElement("slider", (User, Props) => {
 
 	const View = Cycle.createView(Model => {
 		const value$ = Model.get("value$");
+		const min$ = Props.get("min$");
+		const max$ = Props.get("max$");
 		return {
-			vtree$: value$.map(value => (
+			vtree$: Rx.Observable.combineLatest(
+				value$,
+				min$,
+				max$,
+				(value, min, max) => (
 				<div class="form-group">
 					<label>Amount</label>
-					<div class="input-group">
-						<input type="range" value={value} min={Props.get("min$").single()} max={Props.get("max$").single()} placeholder="Amount"/>
-						<div class="input-group-addon">
+					<div className="input-group">
+						<input className="form-control" type="range" value={value} min={min} max={max}/>
+						<div className="input-group-addon">
 							<input type="text" value={value} readonly="1"/>
 						</div>
 					</div>
@@ -63,8 +69,8 @@ const View = Cycle.createView(Model => {
 		(height, mass) => (
 			<div class={"everything"}>
 				<div>
-					<slider class="slider-height" value={height} min={130} max={220}/>
-					<slider class="slider-mass" value={mass} min={25} max={150}/>
+					<slider className="slider-height" value={height} min={130} max={220}/>
+					<slider className="slider-mass" value={mass} min={25} max={150}/>
 				</div>
 				<div>
 					Your BMI is: {"" + calculateBMI(height, mass)}
@@ -77,7 +83,7 @@ const View = Cycle.createView(Model => {
 
 const Intent = Cycle.createIntent(User => {
 	return {
-		changeHeight$: User.event$(".slider-height", "changeValue").map(event => event.data).tap(height => console.log("height changed to: " + height)),
+		changeHeight$: User.event$(".slider-height", "changeValue").map(event => event.data),
 		changeMass$: User.event$(".slider-mass", "changeValue").map(event => event.data)
 	};
 });
