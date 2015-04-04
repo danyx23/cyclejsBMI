@@ -37,11 +37,19 @@ Cycle.registerCustomElement("slider", (User, Props) => {
 				))
 		};
 	});
+
+	function parseValue(val) {
+		const parsed = parseInt(event.target.value, 10);
+		return parsed;
+	}
+
 	const Intent = Cycle.createIntent(User => {
 		const changeSlider$ = User.event$("[type=range]", "input")
-			.map(event => parseInt(event.target.value));
+			.map(event => parseValue(event.target.value));
+
 		const changeInput$ = User.event$("[type=text]", "input")
-			.map(event => parseInt(event.target.value));
+			.map(event => parseValue(event.target.value))
+			.filter(val => !Number.isNaN(val));
 		return {
 			changeSlider$,
 			changeInput$,
