@@ -5,7 +5,7 @@ const h = Cycle.h;
 
 // workaround for babel jsx -> hyperdom h. Babel currently does not create an array of children
 // but simply creates more than 3 arguments, but vdom ignores this. This method fixes this
-function dom(tag, attrs, ...children) { // dom - the name after @jsx, put whatever you want
+function dom(tag, attrs, ...children) {
 	return h(tag, attrs, children);
 }
 
@@ -30,7 +30,7 @@ Cycle.registerCustomElement("slider", (User, Props) => {
 					<div className="input-group">
 						<input className="form-control" type="range" value={value} min={min} max={max}/>
 						<div className="input-group-addon">
-							<input type="text" value={value} readonly="1"/>
+							<input type="text" value={value}/>
 						</div>
 					</div>
 				</div>
@@ -38,9 +38,14 @@ Cycle.registerCustomElement("slider", (User, Props) => {
 		};
 	});
 	const Intent = Cycle.createIntent(User => {
+		const changeSlider$ = User.event$("[type=range]", "input")
+			.map(event => parseInt(event.target.value));
+		const changeInput$ = User.event$("[type=text]", "input")
+			.map(event => parseInt(event.target.value));
 		return {
-			changeValue$: User.event$("[type=range]", "input")
-			.map(event => parseInt(event.target.value))
+			changeSlider$,
+			changeInput$,
+			changeValue$: Rx.Observable.merge(changeSlider$, changeInput$)
 		};
 	});
 	User.inject(View).inject(Model).inject(Intent, Props)[0].inject(User);
