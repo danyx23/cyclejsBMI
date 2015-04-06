@@ -1,5 +1,5 @@
 /** @jsx dom */
-const Cycle = require("cyclejs");
+const Cycle = require("../../cycle/dist/cycle.js");
 const {Rx} = Cycle;
 const h = Cycle.h;
 
@@ -9,34 +9,46 @@ function dom(tag, attrs, ...children) {
 	return h(tag, attrs, children);
 }
 
-Cycle.registerCustomElement("slider", (User, Props) => {
-	const Model = Cycle.createModel((Intent, Props) => ({
-		value$: Props.get("value$").startWith(0)
-		.merge(Intent.get("changeValue$"))
-	}));
+Cycle.registerCustomElement("slider", (rootElement$, props) => {
+	const model = function() {
+		const value$ = Cycle.createStream((changeValue$, propsStartValue$) => {
+						return propsStartValue$
+								.startWith(0)
+								.merge(changeValue$);
 
-	const View = Cycle.createView(Model => {
-		const value$ = Model.get("value$");
-		const min$ = Props.get("min$");
-		const max$ = Props.get("max$");
+		});
 		return {
-			vtree$: Rx.Observable.combineLatest(
-				value$,
-				min$,
-				max$,
-				(value, min, max) => (
-				<div class="form-group">
-					<label>Amount</label>
-					<div className="input-group">
-						<input className="form-control" type="range" value={value} min={min} max={max}/>
-						<div className="input-group-addon">
-							<input type="text" value={value}/>
-						</div>
-					</div>
-				</div>
-				))
+			value$,
+			inject: function inject(props, intent) {
+				value$.inject(intent.changeValue$, props.get('foo$'));
+				return [props, intent];
 		};
-	});
+	}();
+
+	const view = function() {
+		Cycle.createView(Model => {
+			const value$ = Model.get("value$");
+			const min$ = Props.get("min$");
+			const max$ = Props.get("max$");
+			return {
+				vtree$: Rx.Observable.combineLatest(
+					value$,
+					min$,
+					max$,
+					(value, min, max) => (
+						<div class="form-group">
+							<label>Amount</label>
+							<div className="input-group">
+								<input className="form-control" type="range" value={value} min={min} max={max}/>
+								<div className="input-group-addon">
+									<input type="text" value={value}/>
+								</div>
+							</div>
+						</div>
+					))
+			};
+		});
+	}
 
 	function parseValue(val) {
 		const parsed = parseInt(event.target.value, 10);
