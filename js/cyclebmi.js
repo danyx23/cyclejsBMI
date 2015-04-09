@@ -14,7 +14,7 @@ registerCustomElement("slider", (rootElement$, props) => {
                       propsStartValue$.merge(changeValue$));
     const min$ = createStream((propsMin$) => propsMin$.shareReplay(1));
     const max$ = createStream((propsMax$) => propsMax$.shareReplay(1));
-    const label$ = createStream((propsLabel$) => propsLabel$.shareReplay(1));
+    const label$ = createStream((propsLabel$) => propsLabel$.startWith("").shareReplay(1));
     return {
       value$,
       min$,
