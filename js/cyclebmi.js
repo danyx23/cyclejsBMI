@@ -10,16 +10,10 @@ function dom(tag, attrs, ...children) {
 
 Cycle.registerCustomElement("slider", (rootElement$, props) => {
 	const model = function() {
-		const value$ = Cycle.createStream((changeValue$, propsStartValue$) => {
-						return propsStartValue$
-							.merge(changeValue$);
-		});
-		const min$ = Cycle.createStream((propsMin$) => {
-			return propsMin$.shareReplay(1);
-		});
-		const max$ = Cycle.createStream((propsMax$) => {
-			return propsMax$.shareReplay(1);
-		});
+		const value$ = Cycle.createStream((changeValue$, propsStartValue$) =>
+											propsStartValue$.merge(changeValue$).shareReplay(1));
+		const min$ = Cycle.createStream((propsMin$) => propsMin$.shareReplay(1));
+		const max$ = Cycle.createStream((propsMax$) => propsMax$.shareReplay(1));
 		return {
 			value$,
 			min$,
@@ -33,9 +27,8 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
 	}();
 
 	const view = function() {
-		const vtree$ = Cycle.createStream((value$, min$, max$) => {
-
-			return Rx.Observable.combineLatest(
+		const vtree$ = Cycle.createStream((value$, min$, max$) =>
+			Rx.Observable.combineLatest(
 					value$,
 					min$,
 					max$,
@@ -49,8 +42,8 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
 								</div>
 							</div>
 						</div>
-					));
-		});
+					))
+		);
 		return {
 			vtree$,
 			inject(model) {
@@ -59,11 +52,6 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
 			}
 		};
 	}();
-
-	function parseValue(val) {
-		const parsed = parseInt(val, 10);
-		return parsed;
-	}
 
 	const user = (function () {
 		return {
@@ -78,12 +66,12 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
 	const intent = (function () {
 			const changeSlider$ = Cycle.createStream(interactions$ =>
 				interactions$.choose("[type=range]", "input")
-				.map(event => parseValue(event.target.value)));
+					.map(event => parseInt(event.target.value, 10)));
 
 			const changeInput$ = Cycle.createStream(interactions$ =>
 				interactions$.choose("[type=text]", "input")
-				.map(event => parseValue(event.target.value))
-				.filter(val => !Number.isNaN(val)));
+					.map(event => parseInt(event.target.value, 10))
+					.filter(val => !Number.isNaN(val)));
 			return {
 				changeSlider$,
 				changeInput$,
@@ -104,12 +92,8 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
 });
 
 const model = (function () {
-	const height$ = Cycle.createStream(changeHeight$ => {
-		return changeHeight$.startWith(175);
-	});
-	const mass$ = Cycle.createStream(changeMass$ => {
-		return changeMass$.startWith(75);
-	});
+	const height$ = Cycle.createStream(changeHeight$ => changeHeight$.startWith(175));
+	const mass$ = Cycle.createStream(changeMass$ => changeMass$.startWith(75));
 	return {
 		height$,
 		mass$,
@@ -153,9 +137,7 @@ const view = (function () {
 })();
 
 const user = (function () {
-	const interactions$ = Cycle.createStream(function (vtree$) {
-		return Cycle.render(vtree$, '.app').interactions$;
-	});
+	const interactions$ = Cycle.createStream(vtree$ => Cycle.render(vtree$, '.app').interactions$);
 	return {
 		interactions$,
 		inject(view) {
@@ -166,12 +148,8 @@ const user = (function () {
 })();
 
 const intent = (function() {
-	const changeHeight$ = Cycle.createStream(interactions$ => {
-		return interactions$.choose('.slider-height', 'changeValue').map(event => event.data);
-	});
-	const changeMass$ = Cycle.createStream(interactions$ => {
-		return interactions$.choose('.slider-mass', 'changeValue').map(event => event.data);
-	});
+	const changeHeight$ = Cycle.createStream(interactions$ => interactions$.choose('.slider-height', 'changeValue').map(event => event.data));
+	const changeMass$ = Cycle.createStream(interactions$ => interactions$.choose('.slider-mass', 'changeValue').map(event => event.data));
 	return {
 		changeHeight$,
 		changeMass$,
