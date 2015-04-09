@@ -8,6 +8,7 @@ function dom(tag, attrs, ...children) {
   return h(tag, attrs, children);
 }
 
+// register custom slider element that displays a label, a slider and an editable numeric field
 Cycle.registerCustomElement("slider", (rootElement$, props) => {
   const model = function() {
     const value$ = Cycle.createStream((changeValue$, propsStartValue$) =>
@@ -25,7 +26,7 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
         min$.inject(props.get('min$'));
         max$.inject(props.get('max$'));
         label$.inject(props.get('label$'));
-        return [props, intent];
+        return intent;
     }};
   }();
 
@@ -72,6 +73,9 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
         interactions$.choose("[type=range]", "input")
           .map(event => parseInt(event.target.value, 10)));
 
+	    // here we want to filter invalid values so they don't get pushed into the stream and the user can correct them.
+	    // alternatively we could make a stream of objects that have the parsed value or an error message, but since this
+	    // is a simple example, this will do.
       const changeInput$ = Cycle.createStream(interactions$ =>
         interactions$.choose("[type=text]", "input")
           .map(event => parseInt(event.target.value, 10))
@@ -88,8 +92,11 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
       };
   })();
 
-  user.inject(view).inject(model).inject(props, intent)[1].inject(user);
+	// wire up everything
+  user.inject(view).inject(model).inject(props, intent).inject(user);
 
+	// expose only the changeValue$ stream to the outside.
+	// tap is used to log changes in the value to the console.
   return {
     changeValue$: intent.changeValue$.tap(x => console.log("slider changed to: " + x))
   };
@@ -109,7 +116,7 @@ const model = (function () {
   }
 })();
 
-const calculateBMI = (height, mass) =>	{
+function calculateBMI (height, mass) {
   console.log('bmi', height, mass);
   return Math.round(mass / Math.pow(height / 100, 2));
 };
@@ -165,4 +172,5 @@ const intent = (function() {
   };
 })();
 
+// wire everything together
 user.inject(view).inject(model).inject(intent).inject(user);
