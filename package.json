@@ -6,7 +6,7 @@
   "author": "@danyx23",
   "license": "mit",
   "dependencies": {
-    "cyclejs": "^0.17"
+    "cyclejs": "git://github.com/staltz/cycle.git#streams"
   },
   "devDependencies": {
     "babel": "^4.7",

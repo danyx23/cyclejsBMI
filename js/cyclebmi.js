@@ -1,6 +1,5 @@
 /** @jsx dom */
-const {Rx} = Cycle;
-const h = Cycle.h;
+let {Rx, h, createStream, render, registerCustomElement} = require("cyclejs");
 
 // workaround for babel jsx -> hyperdom h. Babel currently does not create an array of children
 // but simply creates more than 3 arguments, but vdom ignores this. This method fixes this
@@ -9,13 +8,13 @@ function dom(tag, attrs, ...children) {
 }
 
 // register custom slider element that displays a label, a slider and an editable numeric field
-Cycle.registerCustomElement("slider", (rootElement$, props) => {
+registerCustomElement("slider", (rootElement$, props) => {
   const model = function() {
-    const value$ = Cycle.createStream((changeValue$, propsStartValue$) =>
+    const value$ = createStream((changeValue$, propsStartValue$) =>
                       propsStartValue$.merge(changeValue$));
-    const min$ = Cycle.createStream((propsMin$) => propsMin$.shareReplay(1));
-    const max$ = Cycle.createStream((propsMax$) => propsMax$.shareReplay(1));
-    const label$ = Cycle.createStream((propsLabel$) => propsLabel$.shareReplay(1));
+    const min$ = createStream((propsMin$) => propsMin$.shareReplay(1));
+    const max$ = createStream((propsMax$) => propsMax$.shareReplay(1));
+    const label$ = createStream((propsLabel$) => propsLabel$.shareReplay(1));
     return {
       value$,
       min$,
@@ -31,7 +30,7 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
   }();
 
   const view = function() {
-    const vtree$ = Cycle.createStream((value$, min$, max$, label$) =>
+    const vtree$ = createStream((value$, min$, max$, label$) =>
       Rx.Observable.combineLatest(
           value$,
           min$,
@@ -69,14 +68,14 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
   })();
 
   const intent = (function () {
-      const changeSlider$ = Cycle.createStream(interactions$ =>
+      const changeSlider$ = createStream(interactions$ =>
         interactions$.choose("[type=range]", "input")
           .map(event => parseInt(event.target.value, 10)));
 
 	    // here we want to filter invalid values so they don't get pushed into the stream and the user can correct them.
 	    // alternatively we could make a stream of objects that have the parsed value or an error message, but since this
 	    // is a simple example, this will do.
-      const changeInput$ = Cycle.createStream(interactions$ =>
+      const changeInput$ = createStream(interactions$ =>
         interactions$.choose("[type=text]", "input")
           .map(event => parseInt(event.target.value, 10))
           .filter(val => !Number.isNaN(val)));
@@ -103,8 +102,8 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
 });
 
 const model = (function () {
-  const height$ = Cycle.createStream(changeHeight$ => changeHeight$.startWith(175));
-  const mass$ = Cycle.createStream(changeMass$ => changeMass$.startWith(75));
+  const height$ = createStream(changeHeight$ => changeHeight$.startWith(175));
+  const mass$ = createStream(changeMass$ => changeMass$.startWith(75));
   return {
     height$,
     mass$,
@@ -122,7 +121,7 @@ function calculateBMI (height, mass) {
 };
 
 const view = (function () {
-  const vtree$ = Cycle.createStream((height$, mass$) => {
+  const vtree$ = createStream((height$, mass$) => {
     return Rx.Observable.combineLatest(
     height$,
     mass$,
@@ -148,7 +147,7 @@ const view = (function () {
 })();
 
 const user = (function () {
-  const interactions$ = Cycle.createStream(vtree$ => Cycle.render(vtree$, '.app').interactions$);
+  const interactions$ = createStream(vtree$ => render(vtree$, '.app').interactions$);
   return {
     interactions$,
     inject(view) {
@@ -159,8 +158,8 @@ const user = (function () {
 })();
 
 const intent = (function() {
-  const changeHeight$ = Cycle.createStream(interactions$ => interactions$.choose('.slider-height', 'changeValue').map(event => event.data));
-  const changeMass$ = Cycle.createStream(interactions$ => interactions$.choose('.slider-mass', 'changeValue').map(event => event.data));
+  const changeHeight$ = createStream(interactions$ => interactions$.choose('.slider-height', 'changeValue').map(event => event.data));
+  const changeMass$ = createStream(interactions$ => interactions$.choose('.slider-mass', 'changeValue').map(event => event.data));
   return {
     changeHeight$,
     changeMass$,
