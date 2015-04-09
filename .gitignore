@@ -1,1 +1,4 @@
 bundle.js.map
+node_modules/
+.idea/
+bundle.js
