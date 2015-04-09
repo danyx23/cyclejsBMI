@@ -14,11 +14,12 @@ http://en.wikipedia.org/wiki/Body_mass_index
 ----
 
 to assemble the code:
-
+```
   npm install
   webpack
-
+```
 At the time of writing the stream branch of cycle does not have a lib directory, so you need to build it:
-
+```
   cd node_modules/cyclejs
   npm run compile-lib
+```
