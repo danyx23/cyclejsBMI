@@ -11,30 +11,34 @@ function dom(tag, attrs, ...children) {
 Cycle.registerCustomElement("slider", (rootElement$, props) => {
 	const model = function() {
 		const value$ = Cycle.createStream((changeValue$, propsStartValue$) =>
-											propsStartValue$.merge(changeValue$).shareReplay(1));
+											propsStartValue$.merge(changeValue$));
 		const min$ = Cycle.createStream((propsMin$) => propsMin$.shareReplay(1));
 		const max$ = Cycle.createStream((propsMax$) => propsMax$.shareReplay(1));
+		const label$ = Cycle.createStream((propsLabel$) => propsLabel$.shareReplay(1));
 		return {
 			value$,
 			min$,
 			max$,
+			label$,
 			inject(props, intent) {
 				value$.inject(intent.changeValue$, props.get('value$'));
 				min$.inject(props.get('min$'));
 				max$.inject(props.get('max$'));
+				label$.inject(props.get('label$'));
 				return [props, intent];
 		}};
 	}();
 
 	const view = function() {
-		const vtree$ = Cycle.createStream((value$, min$, max$) =>
+		const vtree$ = Cycle.createStream((value$, min$, max$, label$) =>
 			Rx.Observable.combineLatest(
 					value$,
 					min$,
 					max$,
-					(value, min, max) => (
+					label$,
+					(value, min, max, label) => (
 						<div class="form-group">
-							<label>Amount</label>
+							<label>{label}</label>
 							<div className="input-group">
 								<input className="form-control" type="range" value={value} min={min} max={max}/>
 								<div className="input-group-addon">
@@ -47,7 +51,7 @@ Cycle.registerCustomElement("slider", (rootElement$, props) => {
 		return {
 			vtree$,
 			inject(model) {
-				vtree$.inject(model.value$, model.min$, model.max$);
+				vtree$.inject(model.value$, model.min$, model.max$, model.label$);
 				return model;
 			}
 		};
@@ -116,13 +120,13 @@ const view = (function () {
 		height$,
 		mass$,
 		(height, mass) => (
-			<div class={"everything"}>
+			<div>
 				<div>
-					<slider className="slider-height" value={height} min={130} max={220} key={1}/>
-					<slider className="slider-mass" value={mass} min={25} max={150} key={2}/>
+					<slider className="slider-height" label="Height (in cm):" value={height} min={130} max={220} key={1}/>
+					<slider className="slider-mass" label="Weight (in kg): " value={mass} min={25} max={150} key={2}/>
 				</div>
 				<div>
-					Your BMI is: {"" + calculateBMI(height, mass)}
+					Your BMI is: {String(calculateBMI(height, mass))}
 				</div>
 			</div>
 		)
