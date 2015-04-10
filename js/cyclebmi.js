@@ -14,7 +14,7 @@ registerCustomElement("slider", (rootElement$, props) => {
                       propsStartValue$.merge(changeValue$));
     const min$ = createStream((propsMin$) => propsMin$.shareReplay(1));
     const max$ = createStream((propsMax$) => propsMax$.shareReplay(1));
-    const label$ = createStream((propsLabel$) => propsLabel$.startWith("").shareReplay(1));
+    const label$ = createStream((propsLabel$) => propsLabel$.shareReplay(1));
     return {
       value$,
       min$,
@@ -40,7 +40,7 @@ registerCustomElement("slider", (rootElement$, props) => {
             <div class="form-group">
               <label>{label}</label>
               <div className="input-group">
-                <input className="form-control" type="range" value={value} min={min} max={max}/>
+                <input className="form-control" type="range" min={min} max={max} value={value}/>
                 <div className="input-group-addon">
                   <input type="text" value={value}/>
                 </div>
