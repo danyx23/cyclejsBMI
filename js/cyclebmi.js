@@ -59,7 +59,7 @@ registerCustomElement("slider", (rootElement$, props) => {
 
   const user = (function () {
     return {
-      interactions$: rootElement$.interactions$,
+      interaction$: rootElement$.interaction$,
       inject(view) {
         rootElement$.inject(view.vtree$);
         return view;
@@ -68,15 +68,15 @@ registerCustomElement("slider", (rootElement$, props) => {
   })();
 
   const intent = (function () {
-      const changeSlider$ = createStream(interactions$ =>
-        interactions$.choose("[type=range]", "input")
+      const changeSlider$ = createStream(interaction$ =>
+        interaction$.choose("[type=range]", "input")
           .map(event => parseInt(event.target.value, 10)));
 
 	    // here we want to filter invalid values so they don't get pushed into the stream and the user can correct them.
 	    // alternatively we could make a stream of objects that have the parsed value or an error message, but since this
 	    // is a simple example, this will do.
-      const changeInput$ = createStream(interactions$ =>
-        interactions$.choose("[type=text]", "input")
+      const changeInput$ = createStream(interaction$ =>
+        interaction$.choose("[type=text]", "input")
           .map(event => parseInt(event.target.value, 10))
           .filter(val => !Number.isNaN(val)));
       return {
@@ -84,8 +84,8 @@ registerCustomElement("slider", (rootElement$, props) => {
         changeInput$,
         changeValue$: Rx.Observable.merge(changeSlider$, changeInput$),
         inject(user) {
-          changeSlider$.inject(user.interactions$);
-          changeInput$.inject(user.interactions$);
+          changeSlider$.inject(user.interaction$);
+          changeInput$.inject(user.interaction$);
           return user;
         }
       };
@@ -147,25 +147,25 @@ const view = (function () {
 })();
 
 const user = (function () {
-  const interactions$ = createStream(vtree$ => render(vtree$, '.app').interactions$);
+  const interaction$ = createStream(vtree$ => render(vtree$, '.app').interaction$);
   return {
-    interactions$,
+    interaction$,
     inject(view) {
-      interactions$.inject(view.vtree$);
+      interaction$.inject(view.vtree$);
       return view;
     }
   };
 })();
 
 const intent = (function() {
-  const changeHeight$ = createStream(interactions$ => interactions$.choose('.slider-height', 'changeValue').map(event => event.data));
-  const changeMass$ = createStream(interactions$ => interactions$.choose('.slider-mass', 'changeValue').map(event => event.data));
+  const changeHeight$ = createStream(interaction$ => interaction$.choose('.slider-height', 'changeValue').map(event => event.data));
+  const changeMass$ = createStream(interaction$ => interaction$.choose('.slider-mass', 'changeValue').map(event => event.data));
   return {
     changeHeight$,
     changeMass$,
     inject(user) {
-      changeHeight$.inject(user.interactions$);
-      changeMass$.inject(user.interactions$);
+      changeHeight$.inject(user.interaction$);
+      changeMass$.inject(user.interaction$);
       return user;
     }
   };
